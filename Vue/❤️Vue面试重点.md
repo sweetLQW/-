@@ -199,7 +199,7 @@
 
       
 
-   4. ##### provide / inject
+   4. ##### provide / inject（适用于父子）
 
       `provide` 和 `inject` 主要在开发高阶插件/组件库时使用。并不推荐用于普通应用程序代码中。
 
@@ -245,7 +245,7 @@
 
       
 
-   5. ##### $parent / $children / $refs
+   5. ##### $parent / $children / $refs（适用于父子）
 
       -  ref 被用来给元素或子组件注册引用信息。
       - 引用信息将会注册在父组件的 $refs 对象上。 
@@ -300,9 +300,8 @@
 
       
 
-   6. ##### Vuex
+   6. ##### Vuex（适用于父子、兄弟、隔代）：[查看详情内容](/Users/lqw/Desktop/前端知识点总结/Vue/❤️Vuex.md)
 
-      
 
    
 
@@ -312,15 +311,24 @@
      - props
      - $attrs
      - provide / inject
+     - $parent（非响应式）
+     - vuex
    - 父传孙（跨级向下传递）
      - $attrs
      - provide / inject
+     - vuex
    - 子传父
      - $emit + events
      - $emit + $on
+     - $listeners + events
+     - $refs / $children（非响应式）
+     - vuex
    - 孙传父（跨级向上传递）
      - $listeners  / $emit + events
-   - 兄弟之间互相传值
+     - vuex
+   - 兄弟之间传值
+     - $emit + $on
+     - vuex
 
    
 
