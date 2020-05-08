@@ -332,52 +332,180 @@
 
    
 
-1. ### Vue支持的路由方式有几种
+3. ### Vue的路由模式有哪几种
 
-   1. hash模式 
-
-   2. history模式
-
-   3. abstract模式
-
-      
-
-2. ### 如何定义vue-router的动态路由以及如何获取传过来的动态参数
+   - `hash`: 使用 URL hash 值来作路由。支持所有浏览器，包括不支持 HTML5 History Api 的浏览器。
+   - `history`: 依赖 HTML5 History API 和服务器配置。查看 [HTML5 History 模式](https://router.vuejs.org/zh/guide/essentials/history-mode.html)。
+   - `abstract`: 支持所有 JavaScript 运行环境，如 Node.js 服务器端。**如果发现没有浏览器的 API，路由会自动强制进入这个模式。**
 
    
 
-3. ### `v-show`与`v-if`区别
+4. ### 路由按需加载有几种方式
+
+   使用vue-cli构建项目后，router/index.js路由文件体积会非常大，如果一开始就全部加载的话，会导致加载非常缓慢，用户体验差，所以按需加载就显得非常重要。
+
+   - #### Webpack - require ensure()
+
+     webpack 在编译时，会静态地解析代码中的 `require.ensure()`，同时将模块添加到一个分开的 chunk 当中。这个新的 chunk 会被 webpack 通过 `jsonp` 来按需加载。指定相同的chunkName的路由，会被合并打包成同一个js文件。
+
+     ```js
+     require.ensure(dependencies: String[], callback: function(require), chunkName: String)
+     ```
+
+     ##### 依赖 dependencies
+
+     这是一个字符串数组，通过这个参数，在所有的回调函数的代码被执行前，我们可以将所有需要用到的模块进行声明。
+
+     ##### 回调 callback
+
+     当所有的依赖都加载完成后，webpack会执行这个回调函数。`require` 对象的一个实现会作为一个参数传递给这个回调函数。因此，我们可以进一步 `require()` 依赖和其它模块提供下一步的执行。
+
+     ##### chunk名称 chunkName
+
+     chunkName 是提供给这个特定的 `require.ensure()` 的 chunk 的名称。通过提供 `require.ensure()` 不同执行点相同的名称，我们可以保证所有的依赖都会一起放进相同的 文件束(bundle)。
+
+     ```js
+     {
+       path: '/home',
+       name: 'home',
+       component: r => require.ensure([], () => r(require('@/home')), 'chunkName')
+     }
+     ```
+
+     
+
+   - #### vue异步组件技术
+
+     每个组件会被单独打包成一个js文件
+
+     ```js
+     {
+       path: '/home',
+       name: 'home',
+       component: resolve => require(['@/home'], resolve)
+     }
+     ```
+
+     
+
+   - #### 使用动态的import()语法
+
+     - 结合 Vue 的异步组件和 Webpack 的代码分割功能，轻松实现路由组件的懒加载。
+
+     - 定义相同webpackChunkName的会被打包成一个js文件
+
+     - 未定义webpackChunkName每个组件会被单独打包成一个js文件。
+
+     ```js
+     const Home =  () => import(/* webpackChunkName: 'group1' */ '@/components/home');
+     const Foo =  () => import(/* webpackChunkName: 'group1' */ '@/components/home');
+     const Bar =  () => import('@/components/home');
+     
+     {
+       path: '/home',
+       name: 'home',
+       component: Home
+     },
+     {
+       path: '/home',
+       name: 'home',
+       component: Foo
+     },
+       {
+       path: '/home',
+       name: 'home',
+       component: Bar
+     }
+     ```
+
+     
 
    
 
-4. ### `<keep-alive></keep-alive>`的作用
+5. ### 如何定义vue-router的动态路由以及如何获取传过来的动态参数
+
+   - 通过/:name的形式来定义动态路由
+   - 使用$route.params.name来获取参数
+
+   ```html
+   <body>
+       <div id="app">
+           <router-link to="/b/1">go to B-1.page</router-link>
+           <br>
+           <router-link to="/b/2">go to B-2.page</router-link>
+           <br>
+           <h4>下面是路由页面</h4>
+           <!-- url中如果有路径参数 -->
+           <p>{{ $route.params }}</p>
+           <!-- url中如果有查询参数 -->
+           <p>{{ $route.query }}</p>
+   
+           <!-- 路由匹配到的组件将渲染在这里 -->
+           <router-view></router-view>
+       </div>
+   
+       <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+       <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+       <script>
+           const B = { template: "<h4>B page</h4>"};
+   
+           const router = new VueRouter({
+               routes: [
+                   { path: '/b/:num', component: B }
+               ]
+           })
+   
+           const vm = new Vue({
+               el: '#app',
+               router
+           })
+   
+       </script>
+   </body>
+   ```
 
    
 
-5. ### 为什么避免`v-for`与`v-if`一起使用
+6. ### `v-show`与`v-if`区别
+
+   - `v-if`在切换过程中条件块内的事件监听器和子组件适当地被销毁和重建
+   - `v-if` 也是**惰性的**：如果在初始渲染时条件为假，则什么也不做——直到条件第一次变为真时，才会开始渲染条件块。
+   - `v-show` 不管初始条件是什么，元素总是会被渲染，并且只是简单地基于 CSS（display） 进行切换。
+   - 一般来说，`v-if` 有更高的切换开销，而 `v-show` 有更高的初始渲染开销。因此，如果需要非常频繁地切换，则使用 `v-show` 较好；如果在运行时条件很少改变，则使用 `v-if` 较好。
+   - 尽量避免v-if与v-for用在同一个元素上。
 
    
 
-6. ### SPA的优缺点
+7. ### `<keep-alive></keep-alive>`的作用
+
+   保存组件的状态，避免反复渲染
 
    
 
-7. ### 如何优化SPA首屏加载速度慢的问题
+8. ### 为什么避免`v-for`与`v-if`一起使用
 
    
 
-8. ### 父组件如何监听子组件的生命周期
+9. ### SPA的优缺点
 
    
 
-9. ### 谈谈对SSR的理解
-
-   
-
-10. ### Vue如何监听某个属性值的变化
+10. ### 如何优化SPA首屏加载速度慢的问题
 
     
 
-11. ### Vue如何自定义过滤器
+11. ### 父组件如何监听子组件的生命周期
+
+    
+
+12. ### 谈谈对SSR的理解
+
+    
+
+13. ### Vue如何监听某个属性值的变化
+
+    
+
+14. ### Vue如何自定义过滤器
 
     
