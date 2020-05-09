@@ -484,28 +484,277 @@
 
 8. ### 为什么避免`v-for`与`v-if`一起使用
 
+   当它们处于同一节点的时候，v-for比v-if优先级高，不管需要展示多少数据，他都会遍历整个数组，并且每次都会计算v-if，影响性能，当需要过滤一些数据的时候，可以使用computed属性。
+
    
 
 9. ### SPA的优缺点
 
+   ##### 优点
+
+   - 良好的交互体验，减少了不必要的跳转和重复的渲染。
+   - 经典MVVM开发模式，前后端职责分离，前端负责view，后端负责module。
+   - 减轻服务端压力
+
    
 
+   缺点
+
+   - 初始化加载慢
+
+   - 不利于SEO
+
+     
+
 10. ### 如何优化SPA首屏加载速度慢的问题
+
+    - 减小入口文件体积
+      - 路由懒加载
+      - 代码分块，按需加载
+      - js库采用CDN引入，减少app.bundel大小
+    - 开启本地缓存
+      - 缓存HTTP请求：分为协商缓存（Last-Modified/If-Modified-Since或Etag/If-None-Match）和强缓存（Cache-Control & Expires）。
+      - Service Worker离线缓存，只适用于HTTPS。
+    - 文件压缩
+      - 服务端开启gzip压缩
+    - SSR
+
+    - 图片懒加载（vue-lazyload）
+    - 展示loading图片，优化用户体验
 
     
 
 11. ### 父组件如何监听子组件的生命周期
 
+    - 方法一：
+
+      ```html
+      <body>
+          <div id="app">
+              <com-child @mounted="childMounted"></com-child>
+          </div>
+      
+          <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+          <script>
+              var comChild = {
+                  template: `<div class="child">子组件</div>`,
+                  mounted: function() {
+                      console.log('子组件的mounted已触发');
+                      this.$emit('mounted');
+                  }
+              }
+      
+              var vm = new Vue({
+                  el: '#app',
+                  components: {comChild},
+                  methods: {
+                      childMounted: function() {
+                          console.log('父组件监听到子组件的mounted了');
+                      }
+                  },
+                  mounted: function() {
+                      console.log('父组件的mounted已触发');
+                  }
+              })
+          </script>
+      </body>
+      ```
+
+      
+
+    - 方法二：使用@hook
+
+      ```html
+      <body>
+          <div id="app">
+              <com-child @hook:mounted="childMounted"></com-child>
+          </div>
+      
+          <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+          <script>
+              var comChild = {
+                  template: `<div class="child">子组件</div>`,
+                  mounted: function() {
+                      console.log('子组件的mounted已触发');
+                  }
+              }
+      
+              var vm = new Vue({
+                  el: '#app',
+                  components: {comChild},
+                  methods: {
+                      childMounted: function() {
+                          console.log('父组件监听到子组件的mounted了');
+                      }
+                  },
+                  mounted: function() {
+                      console.log('父组件的mounted已触发');
+                  }
+              })
+          </script>
+      </body>
+      ```
+
+      
+
+12. ### 谈谈对SSR & 预渲染的理解
+
+    ##### Vue.js 是构建客户端应用程序的框架。默认情况下，可以在浏览器中输出 Vue 组件，进行生成 DOM 和操作 DOM。然而，也可以将同一个组件渲染为服务器端的 HTML 字符串，将它们直接发送到浏览器，最后将这些静态标记"激活"为客户端上完全可交互的应用程序。
+
+    服务端渲染的优点：
+
+    - 更好的SEO
+    - 更快的内容到达时间
+
+    需要衡量的地方：
+
+    - 开发条件所限，一些扩展库在服务端可能需要特殊处理。
+    - 涉及构建设置和部署的更多要求。与可以部署在任何静态文件服务器上的完全静态单页面应用程序 (SPA) 不同，服务器渲染应用程序，需要处于 Node.js server 运行环境。
+    - 更多的服务器端负载。
+
     
 
-12. ### 谈谈对SSR的理解
+    ##### 预渲染：
+
+    在构建时 (build time) 简单地生成针对特定路由的静态 HTML 文件。优点是设置预渲染更简单，并可以将你的前端作为一个完全静态的站点。如果需要与渲染则可以使用webpack的 [prerender-spa-plugin](https://github.com/chrisvfritz/prerender-spa-plugin)。
 
     
 
 13. ### Vue如何监听某个属性值的变化
 
+    监听整个对象变化：
+
+    ```html
+    <body>
+        <div id="app">
+            <p>{{ obj }}</p>
+            <button @click="changeData()">点击更改obj</button>
+        </div>
+    
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script>
+            const vm = new Vue({
+                el: '#app',
+                data: {
+                    obj: {
+                        name: 'lily',
+                        age: 25,
+                        list: [1, 2, 3]
+                    }
+                },
+                methods: {
+                    changeData: function() {
+                        vm.obj.name = 'cindy';
+                        vm.$set(vm.obj.list, 0, 3);
+                    }
+                },
+                watch: {
+                    obj: {
+                        handler: function(newValue, oldValue) {
+                            console.log(newValue);
+                        },
+                        deep: true
+                    }
+                }
+            })
+        </script>
+    </body>
+    ```
+
+    监听单个属性：
+
+    ```html
+    <body>
+        <div id="app">
+            <p>{{ obj }}</p>
+            <button @click="changeData()">点击更改obj</button>
+        </div>
+    
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script>
+            const vm = new Vue({
+                el: '#app',
+                data: {
+                    obj: {
+                        name: 'lily',
+                        age: 25,
+                        list: [1, 2, 3]
+                    }
+                },
+                methods: {
+                    changeData: function() {
+                        vm.obj.name = 'cindy';
+                        vm.$set(vm.obj.list, 0, 3);
+                    }
+                },
+                watch: {
+                    'obj.name': function() {
+                        console.log(vm.obj);
+                    },
+                    'obj.list': function() {
+                        console.log(vm.obj);
+                    }
+                }
+            })
+        </script>
+    </body>
+    ```
+
     
 
 14. ### Vue如何自定义过滤器
+
+    ```html
+    <body>
+        <div id="app">
+            <p>{{ list | filterList }}</p>
+        </div>
+    
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script>
+            const vm = new Vue({
+                el: '#app',
+                data: {
+                    list: [
+                        { name: 'lily', age: 25},
+                        { name: 'cindy', age: 18},
+                        { name: 'sunny', age: 21}
+                    ]
+                },
+                filters: {
+                    filterList: function(data) {
+                        return data.filter((ele) => ele.age > 20);
+                    }
+                }
+            })
+        </script>
+    </body>
+    ```
+
+    高级用法：传参数
+
+    ```html
+    <body>
+        <div id="app">
+            <p>{{ num | filterNum(1, 2) }}</p>
+        </div>
+    
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script>
+            const vm = new Vue({
+                el: '#app',
+                data: {
+                    num: 0
+                },
+                filters: {
+                    filterNum: function(data, arg1, arg2) {
+                        console.log(arg1, arg2)
+                        return data + arg1 + arg2;
+                    }
+                }
+            })
+        </script>
+    </body>
+    ```
 
     
