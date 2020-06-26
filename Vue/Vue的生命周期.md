@@ -1,6 +1,6 @@
 # Vue的生命周期
 
-![Vue生命周期钩子](%E2%9D%A4%EF%B8%8FVue%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.assets/Vue%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90.jpg)
+![Vue生命周期钩子](Vue%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.assets/Vue%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90.jpg)
 
 
 
@@ -56,7 +56,7 @@
 
    Result：
 
-   ![image-20200503121048758](%E2%9D%A4%EF%B8%8FVue%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.assets/image-20200503121048758.png)
+   ![image-20200503121048758](Vue%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.assets/image-20200503121048758.png)
 
 5. beforeCreate和created钩子中执行this.$nextTick(fun)，相当于把内容延迟到mounted钩子中执行。
 
@@ -104,4 +104,20 @@
 
    Result:
 
-   ![image-20200503124621754](%E2%9D%A4%EF%B8%8FVue%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.assets/image-20200503124621754.png)
+   ![image-20200503124621754](Vue%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.assets/image-20200503124621754.png)
+
+6. 子组件与父组件的渲染执行顺序
+
+   父beforeCreate > 父created > 父beforeMount > 
+
+   子beforeCreate > 子created > 子beforeMount  > 子mounted > 
+
+   父mounted
+
+7. 子组件与父组件的更新顺序
+
+   父beforeUpdate > 子beforeUpdate > 子updated > 父updated 
+
+8. 子组件与父组件的销毁顺序
+
+   父beforeDestroy > 子beforeDestroy > 子destroyed > 父destroyed 

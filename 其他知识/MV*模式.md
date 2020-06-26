@@ -1,6 +1,6 @@
 # MV*模式
 
-##### MVC模式
+## MVC模式
 
 module：主要是处理数据，负责业务逻辑。
 
@@ -20,7 +20,7 @@ controller：负责module和view之间的协作，负责应用逻辑，不能操
 
 
 
-##### MVP（Passive view）模式
+## MVP（Passive view）模式
 
 与mvc的区别是：
 
@@ -44,7 +44,7 @@ Presenter：负责module和view之间的协作，负责应用逻辑，可以操�
 
 
 
-##### MVVM（Model-View-ViewModel）模式 ---- 对mvp的改良
+## MVVM（Model-View-ViewModel）模式 ---- 对mvp的改良
 
 module：主要是处理数据，负责业务逻辑（Domain Model）。
 
